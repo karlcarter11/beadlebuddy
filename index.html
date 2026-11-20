@@ -1,0 +1,908 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0A68DC">
+<title>Beadle Buddy</title>
+<meta name="description" content="Paperless Class Beadle forms and Admit to Class slips. A browser demo: nothing is saved or sent anywhere.">
+<link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icons/icon-180.png">
+<style>
+@font-face{font-family:"Mona Sans";src:url("assets/fonts/mona-sans-latin-wght-normal.woff2") format("woff2");font-weight:200 900;font-display:swap}
+@font-face{font-family:"JetBrains Mono";src:url("assets/fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2");font-weight:100 800;font-display:swap}
+:root{
+  --azure-50:#EFF7FF;--azure-100:#DBEDFF;--azure-200:#BADBFF;--azure-300:#8CC3FF;--azure-400:#52A3FF;
+  --azure-500:#1F7BF2;--azure-600:#0A68DC;--azure-700:#0A53B3;--azure-800:#0E4690;--azure-900:#0F3A73;--azure-950:#0A2547;
+  --ink:#0A2547;--ink-2:#41567A;--ink-3:#7589A8;--line:#E3EDFA;--surface:#fff;--surface-2:#F4F9FF;
+  --present:#12A150;--present-bg:#DDF5E7;--present-ink:#0B6B35;
+  --late:#E39A06;--late-bg:#FEF0CC;--late-ink:#8A5600;
+  --absent:#E5484D;--absent-bg:#FDE3E4;--absent-ink:#B4232A;
+  --excused:#0A9DC0;--excused-bg:#D6F1F8;--excused-ink:#076A82;
+  --grad-cta:linear-gradient(180deg,#1F7BF2,#0A68DC);
+  --font-sans:"Mona Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r-sm:10px;--r-md:16px;--r-lg:24px;--border:var(--azure-200);--ease:160ms ease;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--font-sans);font-size:16px;line-height:1.5;color:var(--ink);background:var(--surface-2)}
+img,svg{display:block;max-width:100%}img{height:auto}
+.icon{display:inline-block;flex:none;vertical-align:middle}
+a{color:var(--azure-700)}a:hover{color:var(--azure-800)}
+h1,h2,h3{line-height:1.2;margin:0 0 .5rem;font-weight:700;letter-spacing:-.01em}
+h1{font-size:1.6rem}h2{font-size:1.25rem}h3{font-size:1.05rem}p{margin:0 0 .75rem}
+.mono,time{font-family:var(--font-mono);font-feature-settings:"tnum"}
+.muted{color:var(--ink-2)}.small{font-size:.875rem}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+:focus-visible{outline:3px solid var(--azure-500);outline-offset:2px;border-radius:6px}
+.skip{position:absolute;left:12px;top:-60px;z-index:60;background:#fff;color:var(--ink);padding:10px 14px;border:2px solid var(--azure-600);border-radius:var(--r-sm)}
+.skip:focus{top:12px}
+[hidden]{display:none!important}
+
+/* header */
+.topbar{background:var(--azure-600);color:#fff}
+.topbar-in{max-width:1120px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand img{height:30px;width:auto}
+.nav{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
+.nav a,.btn-light{color:#fff;text-decoration:none;padding:8px 12px;border-radius:var(--r-sm);display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-weight:600;font-size:.95rem;transition:background var(--ease)}
+.nav a:hover,.btn-light:hover{background:var(--azure-700);color:#fff}
+.nav a[aria-current=page]{background:var(--azure-800)}
+.badge{background:#fff;color:var(--azure-800);border-radius:999px;font-family:var(--font-mono);font-size:.75rem;padding:0 7px;font-weight:700}
+.btn-light{border:1.5px solid var(--azure-300);background:transparent;font:inherit;font-weight:600;cursor:pointer;padding:6px 10px}
+.demo-bar{background:var(--azure-50);border-bottom:1.5px solid var(--azure-200);color:var(--azure-800);font-size:.85rem;text-align:center;padding:6px 12px}
+@media(max-width:720px){.nav{order:3;flex-basis:100%}.whoami{margin-left:auto}}
+
+/* layout */
+main{max-width:1120px;margin:0 auto;padding:20px 16px 130px}
+main:focus{outline:none}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.page-head p{margin:0}
+.eyebrow{color:var(--azure-700);font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.grid{display:grid;gap:16px}.g3{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.spacer{flex:1}.mt{margin-top:16px}
+.card{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);padding:18px}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}.card-head h2,.card-head h3{margin:0}
+a.card-link{display:block;color:inherit;text-decoration:none;transition:border-color var(--ease)}
+a.card-link:hover{border-color:var(--azure-500);color:inherit}
+.feature{display:flex;flex-direction:column;gap:10px;min-height:170px}
+.feature-icon{width:48px;height:48px;border-radius:14px;background:var(--azure-50);color:var(--azure-600);display:grid;place-items:center}
+.feature .title{font-weight:800;letter-spacing:.06em;font-size:1.05rem}
+.go{margin-top:auto;display:flex;align-items:center;gap:6px;color:var(--azure-700);font-weight:600}
+.role-card img{border-radius:var(--r-md);margin-bottom:12px;width:100%}
+
+/* buttons + forms */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:var(--r-sm);font:inherit;font-weight:700;cursor:pointer;text-decoration:none;border:1.5px solid var(--border);background:#fff;color:var(--azure-700);transition:background var(--ease),transform 120ms ease}
+.btn:hover{background:var(--azure-50);color:var(--azure-800)}.btn:active{transform:scale(.98)}
+.btn[disabled]{opacity:.55;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--grad-cta);color:#fff;border-color:var(--azure-700)}.btn-primary:hover{background:var(--azure-700);color:#fff}
+.btn-approve{background:var(--present-ink);border-color:var(--present-ink);color:#fff}.btn-approve:hover{background:#08552A;color:#fff}
+.btn-reject{color:var(--absent-ink);border-color:#F3B8BA}.btn-reject:hover{background:var(--absent-bg);color:var(--absent-ink)}
+.btn-sm{min-height:36px;padding:0 12px;font-size:.9rem}.btn-block{width:100%}
+label{font-weight:600;font-size:.9rem;display:block;margin-bottom:4px}
+input[type=text],input[type=search],select,textarea{width:100%;min-height:44px;padding:8px 12px;font:inherit;color:var(--ink);background:#fff;border:1.5px solid var(--border);border-radius:var(--r-sm)}
+textarea{min-height:120px;resize:vertical}
+.field{margin-bottom:14px}.form-row{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));align-items:end}
+.check{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);font-weight:500;margin:0;cursor:pointer}
+.check:last-child{border-bottom:0}.check input{width:22px;height:22px;accent-color:var(--azure-600);flex:none}
+
+/* alerts, toasts */
+.alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:#fff;margin-bottom:12px}
+.alert-ok{border-color:#9ED8B5;background:var(--present-bg);color:var(--present-ink)}
+.alert-err{border-color:#F3B8BA;background:var(--absent-bg);color:var(--absent-ink)}
+.alert-warn{border-color:#F2CF7A;background:var(--late-bg);color:var(--late-ink)}
+.alert-info{border-color:var(--azure-200);background:var(--azure-50);color:var(--azure-800)}
+#toasts{position:fixed;left:0;right:0;bottom:84px;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:40;pointer-events:none;padding:0 12px}
+.toast{pointer-events:auto;max-width:560px;width:100%;margin:0;animation:fade 180ms ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* chips (icon + label + color, never color alone) */
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 7px;border-radius:999px;font-size:.85rem;font-weight:700;border:1.5px solid;white-space:nowrap;line-height:1.3}
+.chip-present{background:var(--present-bg);color:var(--present-ink);border-color:#9ED8B5}
+.chip-late{background:var(--late-bg);color:var(--late-ink);border-color:#F2CF7A}
+.chip-absent{background:var(--absent-bg);color:var(--absent-ink);border-color:#F3B8BA}
+.chip-excused{background:var(--excused-bg);color:var(--excused-ink);border-color:#94D5E5}
+.chip-none{background:#fff;color:var(--ink-2);border-color:var(--border)}
+.chip-draft{background:var(--azure-50);color:var(--azure-800);border-color:var(--azure-200)}
+.chip-submitted{background:var(--late-bg);color:var(--late-ink);border-color:#F2CF7A}
+.chip-approved{background:var(--present-bg);color:var(--present-ink);border-color:#9ED8B5}
+.chip-sent_back{background:var(--absent-bg);color:var(--absent-ink);border-color:#F3B8BA}
+.chip-admitted{background:var(--azure-50);color:var(--azure-800);border-color:var(--azure-300)}
+.mini{display:inline-flex;align-items:center;justify-content:center;gap:3px;min-width:30px;height:26px;border-radius:8px;font-weight:700;font-size:.78rem;border:1.5px solid;padding:0 4px}
+
+/* sheet */
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin-bottom:12px}
+.tab{flex:none;min-width:78px;text-align:center;text-decoration:none;color:var(--ink);background:#fff;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:6px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.8rem}
+.tab strong{font-size:.95rem}.tab[aria-current=page]{background:var(--azure-600);border-color:var(--azure-600);color:#fff}
+.tab .st{display:inline-flex;align-items:center;gap:3px}
+.tab .s-approved{color:var(--present-ink)}.tab .s-submitted{color:var(--late-ink)}.tab .s-sent_back{color:var(--absent-ink)}
+.tab[aria-current=page] .st{color:#fff}
+.roster{list-style:none;margin:0;padding:0}
+.rrow{display:grid;grid-template-columns:1fr;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.rrow:last-child{border-bottom:0}
+.rname{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:28px}
+.rname .num{font-family:var(--font-mono);color:var(--ink-2);font-size:.8rem;min-width:1.8em}.rname .who{font-weight:600}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.seg button{min-height:44px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:#fff;color:var(--ink-2);font:inherit;font-size:.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:0 4px;min-width:0;transition:background var(--ease),border-color var(--ease),transform 120ms}
+.seg button:active{transform:scale(.97)}.seg button:hover{border-color:var(--azure-400)}
+.seg button[aria-pressed=true][data-status=present]{background:var(--present-bg);color:var(--present-ink);border-color:var(--present)}
+.seg button[aria-pressed=true][data-status=late]{background:var(--late-bg);color:var(--late-ink);border-color:var(--late)}
+.seg button[aria-pressed=true][data-status=absent]{background:var(--absent-bg);color:var(--absent-ink);border-color:var(--absent)}
+.seg button[aria-pressed=true][data-status=excused]{background:var(--excused-bg);color:var(--excused-ink);border-color:var(--excused)}
+.seg button[disabled]{cursor:default}.seg button[disabled][aria-pressed=false]{opacity:.45}
+.trow{background:var(--azure-50);border-radius:var(--r-md) var(--r-md) 0 0}
+@media(min-width:760px){.rrow{grid-template-columns:1fr minmax(380px,440px);align-items:center}}
+@media(max-width:440px){main{padding-left:10px;padding-right:10px}.rrow{padding:10px}.seg{gap:4px}.seg button{font-size:.78rem;gap:3px;padding:0 2px}.seg button .icon{width:16px;height:16px}}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;z-index:30;border-top:1.5px solid var(--border)}
+.bar-in{max-width:1120px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--present);margin-right:6px}
+
+/* tables, lists */
+.twrap{overflow-x:auto;border:1.5px solid var(--border);border-radius:var(--r-md);background:#fff}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2);background:var(--azure-50);white-space:nowrap}
+tr:last-child td,tr:last-child th{border-bottom:0}
+td.c{text-align:center}
+.gt th:first-child,.gt td:first-child{position:sticky;left:0;background:#fff;z-index:1;min-width:170px}
+.gt thead th:first-child{background:var(--azure-50)}
+th[scope=row]{font-weight:500;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--ink);background:#fff}
+.list{list-style:none;margin:0;padding:0;background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md)}
+.list>li{border-bottom:1px solid var(--line)}.list>li:last-child{border-bottom:0}
+.li{display:flex;align-items:center;gap:12px;padding:14px 16px;text-decoration:none;color:inherit;flex-wrap:wrap}
+a.li:hover{background:var(--azure-50);color:inherit}
+.li .lead{width:40px;height:40px;border-radius:12px;background:var(--azure-50);color:var(--azure-600);display:grid;place-items:center;flex:none}
+.li .body{flex:1;min-width:160px}.li .body strong{display:block}
+.empty{text-align:center;padding:28px 16px}.empty img{width:220px;margin:0 auto 8px}
+.paper{display:inline-flex;align-items:center;gap:8px;color:var(--present-ink);font-size:.875rem;font-weight:600}
+details summary{cursor:pointer;font-weight:600;color:var(--azure-700)}
+.footer{text-align:center;color:var(--ink-2);font-size:.8rem;padding:24px 0 0}
+.hero{background:var(--azure-600);color:#fff;border-radius:var(--r-lg);padding:28px 24px;display:grid;gap:18px;grid-template-columns:1fr;align-items:center;margin-bottom:20px}
+.hero h1{font-size:1.9rem;margin-bottom:8px}.hero p{color:var(--azure-50);max-width:520px;margin:0}
+.hero img.flow{border-radius:var(--r-md);background:var(--azure-50)}
+@media(min-width:900px){.hero{grid-template-columns:1fr 1fr;padding:36px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-add-student" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3.5"/><path d="M3 20a5 5 0 0 1 10 0"/><path d="M18.500 14v6M15.500 17h6"/></symbol><symbol id="i-admit-to-class" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.500 6h11A2.5 2.5 0 0 1 20 8.5V10a2 2 0 0 0 0 4v1.500a2.5 2.5 0 0 1-2.500 2.500h-11A2.5 2.5 0 0 1 4 15.500V14a2 2 0 0 0 0-4z"/><path d="m9.500 12 2 2 3.500-4"/></symbol><symbol id="i-apfor-id" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.500"/><circle cx="9" cy="11" r="2"/><path d="M5.800 16c.6-1.600 1.800-2.300 3.200-2.300s2.600.7 3.200 2.300M14.500 10h3.500M14.500 13.500h3"/></symbol><symbol id="i-approve" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 3 3 5-6"/></symbol><symbol id="i-beadle-sheet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4.5" width="14" height="17" rx="2.5"/><rect x="9" y="2.5" width="6" height="4" rx="1.2"/><path d="M9 11h6M9 15h6M9 18.5h3"/></symbol><symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.500 7.500 2.500 7.500h-17S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol><symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.500"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol><symbol id="i-check-records" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2.5 2.5 0 0 0-2.5 2.5v13A2.5 2.5 0 0 0 7 21h10a2.5 2.5 0 0 0 2.5-2.5V8.5z"/><path d="M14 3v5.5h5.5"/><circle cx="11" cy="14.5" r="2.6"/><path d="m13 16.5 2 2"/></symbol><symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.500 4.500 4.500L19 7.500"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol><symbol id="i-cleanliness" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4l-7.5 7.5"/><path d="M10 9.5l4.5 4.5-3 6.5H4.5l-1-2.5z"/><path d="M7 15.5l2.5 2.5"/></symbol><symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12M18 6 6 18"/></symbol><symbol id="i-excuse-letter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.500 7.500 8.500 6 8.500-6"/></symbol><symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"/><path d="M5 9.500V20h14V9.500"/></symbol><symbol id="i-leaf-paper-saved" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 9-5 15-12 15-1.200 0-2.200-.3-3-.8C4.500 10 9 4 20 4z"/><path d="M5 19c3-5 6-8 10-10"/></symbol><symbol id="i-log-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"/><path d="m16 17 5-5-5-5M21 12H9"/></symbol><symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></symbol><symbol id="i-mfi-dress-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 3 6l2 4 3-1.5V21h8V8.5l3 1.5 2-4-5-3a4 4 0 0 1-8 0z"/></symbol><symbol id="i-pending-approvals" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 13 6 5.8A2 2 0 0 1 7.9 4.5h8.2a2 2 0 0 1 1.9 1.3L20.5 13"/><path d="M3.5 13v5a2.5 2.5 0 0 0 2.5 2.5h12a2.5 2.5 0 0 0 2.5-2.5v-5H16l-1 2.5H9L8 13z"/></symbol><symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol><symbol id="i-reject" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></symbol><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.500"/><path d="m16 16 4.500 4.500"/></symbol><symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14"/><path d="M21 3l-6.5 18-3.5-7-7-3.5z"/></symbol><symbol id="i-status-absent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3.5"/><path d="M3 20a5 5 0 0 1 10 0"/><path d="m15.500 15 5 5M20.500 15l-5 5"/></symbol><symbol id="i-status-excused" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3.5"/><path d="M3 20a5 5 0 0 1 10 0"/><rect x="14.500" y="14.500" width="7" height="5.500" rx="1.200"/><path d="m14.800 15.300 3.200 2.300 3.200-2.300"/></symbol><symbol id="i-status-late" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3.5"/><path d="M3 20a5 5 0 0 1 10 0"/><circle cx="18.500" cy="17" r="4"/><path d="M18.500 15v2l1.300.8"/></symbol><symbol id="i-status-present" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3.5"/><path d="M3 20a5 5 0 0 1 10 0"/><path d="m14.500 17 2.300 2.300 4.200-4.600"/></symbol><symbol id="i-students" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3.5"/><path d="M3 20a5 5 0 0 1 10 0"/><path d="M14.500 4.800a3.500 3.500 0 0 1 0 6.400M17.500 20a5 5 0 0 0-2.800-4.500"/></symbol><symbol id="i-teacher" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="11" rx="2.500"/><path d="M12 15v5M8 20.500h8M7 11l3-2.500 2.500 1.500L16 7"/></symbol><symbol id="i-violation-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></symbol></svg>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><div class="topbar-in">
+  <a class="brand" href="#/"><img src="assets/logo/beadle-buddy-lockup-on-dark.svg" alt="Beadle Buddy home" width="150" height="30"></a>
+  <nav class="nav" id="nav" aria-label="Main"></nav>
+  <div class="whoami" id="whoami"></div>
+</div></header>
+<div class="demo-bar" role="note">Browser demo: nothing is saved or sent anywhere. Refreshing the page starts over.</div>
+<main id="main" tabindex="-1"></main>
+<div id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+/* STORE:START */
+"use strict";
+const STATUSES = ["present", "late", "absent", "excused"];
+const LABEL = { present: "Present", late: "Late", absent: "Absent", excused: "Excused" };
+const STATE_LABEL = { draft: "Draft", submitted: "Awaiting teacher", approved: "Approved", sent_back: "Sent back" };
+const ALLOWED = new Set(["draft>submitted", "submitted>approved", "submitted>sent_back", "sent_back>submitted"]);
+const PERIODS = [
+  [1, "07:30", "08:20"], [2, "08:20", "09:10"], [3, "09:30", "10:20"], [4, "10:20", "11:10"],
+  [5, "12:10", "13:00"], [6, "13:00", "13:50"], [7, "14:00", "14:50"], [8, "14:50", "15:40"],
+].map(([n, a, b]) => ({ n, start: a, end: b }));
+const VIOLATIONS = ["Improper uniform", "No ID / ID not worn", "Haircut not in policy", "Improper footwear",
+  "Untucked polo", "Non-regulation accessories"];
+const CLEAN_ITEMS = ["Floor swept", "Board cleaned", "Chairs and tables aligned",
+  "Trash segregated (biodegradable / residual / recyclable)", "Bins emptied",
+  "Lights and air-conditioning turned off", "Windows and blinds in order"];
+const TEACHERS = ["Mr. Reyes", "Ms. Santos", "Mr. Dela Cruz"];
+const SUBJECTS = ["Oral Communication", "General Mathematics", "Earth Science", "Filipino",
+  "Physical Education", "Theology", "Pre-Calculus", "Empowerment Technologies"];
+
+class RuleError extends Error {}
+
+const clock = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+
+class Store {
+  constructor() {
+    this.sections = [
+      { name: "Faber", grade: 11, strand: "STEM", adviser: "Mr. Reyes" },
+      { name: "Xavier", grade: 12, strand: "ABM", adviser: "Ms. Santos" },
+    ];
+    this.students = [];       // {id, name, section}
+    this.forms = [];
+    this.dayReports = {};     // section -> time sent to the APFOR
+    this.excuses = [];
+    this.admits = [];
+    this.log = [];
+    this._sid = 1;
+    this._fid = 1;
+    this._eid = 1;
+  }
+  section(name) { return this.sections.find((s) => s.name === name); }
+  studentsOf(section) { return this.students.filter((s) => s.section === section); }
+  student(id) { return this.students.find((s) => s.id === Number(id)); }
+  teacherFor(section, periodNo) {
+    const si = this.sections.findIndex((s) => s.name === section);
+    return TEACHERS[(periodNo + si) % 3];
+  }
+  subjectFor(section, periodNo) {
+    const si = this.sections.findIndex((s) => s.name === section);
+    return SUBJECTS[(periodNo - 1 + si * 3) % SUBJECTS.length];
+  }
+  audit(who, action, detail = "") { this.log.push({ at: clock(), who, action, detail }); }
+
+  /* ---- permissions: ctx is { role, section?, teacher? } ---- */
+  _beadle(ctx, section) {
+    if (!ctx || ctx.role !== "beadle" || ctx.section !== section) {
+      throw new RuleError("Only the Beadle of " + section + " can do this.");
+    }
+  }
+  _teacher(ctx, form) {
+    if (!ctx || ctx.role !== "teacher" || ctx.teacher !== form.teacher) {
+      throw new RuleError("This form is addressed to " + form.teacher + ".");
+    }
+  }
+  _apfor(ctx) { if (!ctx || ctx.role !== "apfor") throw new RuleError("Only the APFOR can do this."); }
+
+  /* ---- class list typed by the Beadle ---- */
+  addStudents(ctx, section, text) {
+    this._beadle(ctx, section);
+    const have = new Set(this.studentsOf(section).map((s) => s.name.toLowerCase()));
+    const added = [], skipped = [];
+    for (const raw of String(text).split(/[;\n]/)) {
+      const name = raw.replace(/\s+/g, " ").trim();
+      if (!name) continue;
+      if (name.length > 60 || have.has(name.toLowerCase())) { skipped.push(name); continue; }
+      this.students.push({ id: this._sid++, name, section });
+      have.add(name.toLowerCase());
+      added.push(name);
+    }
+    if (added.length) this.audit("Beadle " + section, "roster.added", added.length + " student(s)");
+    return { added, skipped };
+  }
+  studentInUse(id) {
+    return this.forms.some((f) => (f.data.marks && id in f.data.marks)
+      || (f.data.entries && f.data.entries.some((e) => e.sid === id))
+      || (f.data.absentees && f.data.absentees.includes(id)));
+  }
+  removeStudent(ctx, id) {
+    const st = this.student(id);
+    if (!st) throw new RuleError("No such student.");
+    this._beadle(ctx, st.section);
+    if (this.studentInUse(st.id)) throw new RuleError(st.name + " already has marks or entries, so cannot be removed.");
+    this.students = this.students.filter((s) => s.id !== st.id);
+    this.audit("Beadle " + st.section, "roster.removed", st.name);
+    return st;
+  }
+
+  /* ---- forms ---- */
+  getForm(kind, section, key) {
+    let title, teacher, data;
+    if (kind === "attendance") {
+      title = "Beadle Sheet, Period " + key; teacher = this.teacherFor(section, key);
+      data = { marks: {}, teacherMark: null, admitted: {} };
+    } else if (kind === "mfi") {
+      title = "MFI Sheet, " + (key === "dress" ? "dress code" : "absentees"); teacher = this.section(section).adviser;
+      data = { entries: [], absentees: [] };
+    } else {
+      title = "Cleanliness Form"; teacher = this.section(section).adviser; key = "-";
+      data = { checks: CLEAN_ITEMS.map((label) => ({ label, done: false })), remarks: "" };
+    }
+    let f = this.forms.find((x) => x.kind === kind && x.section === section && x.key === key);
+    if (!f) {
+      f = { id: this._fid++, kind, section, key, title, teacher, status: "draft", reason: "",
+        submittedAt: null, decidedAt: null, data };
+      this.forms.push(f);
+    }
+    return f;
+  }
+  formById(id) { return this.forms.find((f) => f.id === Number(id)); }
+  locked(f) { return f.status === "submitted" || f.status === "approved"; }
+
+  transition(f, to, who, reason = "") {
+    if (!ALLOWED.has(f.status + ">" + to)) throw new RuleError("A " + STATE_LABEL[f.status].toLowerCase() + " form cannot become " + to + ".");
+    if (to === "sent_back" && !String(reason).trim()) throw new RuleError("Add a short reason so the Beadle knows what to fix.");
+    const prev = f.status;
+    f.status = to;
+    if (to === "submitted") { f.submittedAt = clock(); f.decidedAt = null; }
+    else { f.decidedAt = clock(); if (to === "sent_back") f.reason = String(reason).trim(); }
+    this.audit(who, f.kind + "." + to, f.title + " (" + f.section + "): " + prev + " -> " + to + (reason ? " [" + reason + "]" : ""));
+  }
+
+  /* ---- Beadle ---- */
+  mark(ctx, f, who, status) {
+    this._beadle(ctx, f.section);
+    if (this.locked(f)) throw new RuleError("This period was already sent to the teacher.");
+    if (status !== null && !STATUSES.includes(status)) throw new RuleError("Unknown status.");
+    if (who === "teacher") { f.data.teacherMark = status; return; }
+    const id = Number(who);
+    const st = this.student(id);
+    if (!st || st.section !== f.section) throw new RuleError("That student is not in this section.");
+    if (status === null) delete f.data.marks[id]; else f.data.marks[id] = status;
+  }
+  markAllPresent(ctx, f) {
+    this._beadle(ctx, f.section);
+    if (this.locked(f)) throw new RuleError("This period was already sent to the teacher.");
+    let n = 0;
+    for (const s of this.studentsOf(f.section)) if (!(s.id in f.data.marks)) { f.data.marks[s.id] = "present"; n++; }
+    return n;
+  }
+  unmarked(f) { return this.studentsOf(f.section).filter((s) => !(s.id in f.data.marks)); }
+  sendAttendance(ctx, f) {
+    this._beadle(ctx, f.section);
+    if (!this.studentsOf(f.section).length) throw new RuleError("Type the class list first.");
+    const left = this.unmarked(f).length;
+    if (left) throw new RuleError("Mark every student first (" + left + " left).");
+    this.transition(f, "submitted", "Beadle " + f.section);
+  }
+  sendForm(ctx, f) { this._beadle(ctx, f.section); this.transition(f, "submitted", "Beadle " + f.section); }
+  logInfraction(ctx, f, sid, violation) {
+    this._beadle(ctx, f.section);
+    if (this.locked(f)) throw new RuleError("This list was already sent to the teacher.");
+    const st = this.student(sid);
+    if (!st || st.section !== f.section) throw new RuleError("Pick a student from your class list.");
+    if (!VIOLATIONS.includes(violation)) throw new RuleError("Pick the violation.");
+    if (f.data.entries.some((e) => e.sid === st.id && e.violation === violation)) throw new RuleError("That violation is already logged for this student.");
+    f.data.entries.push({ sid: st.id, violation });
+  }
+  removeInfraction(ctx, f, index) {
+    this._beadle(ctx, f.section);
+    if (this.locked(f)) throw new RuleError("This list was already sent to the teacher.");
+    f.data.entries.splice(index, 1);
+  }
+  setAbsentees(ctx, f, ids) {
+    this._beadle(ctx, f.section);
+    if (this.locked(f)) throw new RuleError("This list was already sent to the teacher.");
+    const valid = new Set(this.studentsOf(f.section).map((s) => s.id));
+    f.data.absentees = ids.map(Number).filter((i) => valid.has(i));
+  }
+  toggleCheck(ctx, f, index) {
+    this._beadle(ctx, f.section);
+    if (this.locked(f)) throw new RuleError("This form was already sent to the teacher.");
+    f.data.checks[index].done = !f.data.checks[index].done;
+  }
+  setRemarks(ctx, f, text) {
+    this._beadle(ctx, f.section);
+    if (this.locked(f)) throw new RuleError("This form was already sent to the teacher.");
+    f.data.remarks = String(text).slice(0, 500);
+  }
+  dayComplete(section) {
+    return PERIODS.every((p) => { const f = this.forms.find((x) => x.kind === "attendance" && x.section === section && x.key === p.n);
+      return f && this.locked(f); });
+  }
+  sendDay(ctx, section) {
+    this._beadle(ctx, section);
+    if (this.dayReports[section]) throw new RuleError("Today was already sent to the APFOR.");
+    if (!this.dayComplete(section)) throw new RuleError("Send every period to its teacher first.");
+    this.dayReports[section] = clock();
+    this.audit("Beadle " + section, "day.sent_to_apfor", section);
+  }
+
+  /* ---- Teacher ---- */
+  pending() { return this.forms.filter((f) => f.status === "submitted"); }
+  approve(ctx, f) { this._teacher(ctx, f); this.transition(f, "approved", f.teacher); }
+  sendBack(ctx, f, reason) { this._teacher(ctx, f); this.transition(f, "sent_back", f.teacher, reason); }
+
+  /* ---- APFOR ---- */
+  admit(ctx, sid, periodNo, reason) {
+    this._apfor(ctx);
+    const st = this.student(sid);
+    if (!st) throw new RuleError("No such student.");
+    const f = this.getForm("attendance", st.section, Number(periodNo));
+    const cur = f.data.marks[st.id];
+    if (cur === undefined || cur === "absent") f.data.marks[st.id] = "late"; // admitted means in class: Late, never Absent
+    const at = clock();
+    f.data.admitted[st.id] = at;
+    this.admits.push({ sid: st.id, name: st.name, section: st.section, period: Number(periodNo), reason: reason || "Late", at });
+    this.audit("APFOR", "admit.issued", st.name + ", period " + periodNo + ": " + (reason || "Late"));
+  }
+  recordExcuse(ctx, sid, reason) {
+    this._apfor(ctx);
+    const st = this.student(sid);
+    if (!st) throw new RuleError("Pick the student the letter is for.");
+    const l = { id: this._eid++, sid: st.id, name: st.name, section: st.section, reason: String(reason || "").trim().slice(0, 300),
+      decision: "pending", at: clock() };
+    this.excuses.push(l);
+    this.audit("APFOR", "excuse.recorded", st.name);
+    return l;
+  }
+  decideExcuse(ctx, id, approved) {
+    this._apfor(ctx);
+    const l = this.excuses.find((x) => x.id === Number(id));
+    if (!l) throw new RuleError("No such letter.");
+    if (l.decision !== "pending") throw new RuleError("This letter was already decided.");
+    l.decision = approved ? "approved" : "not approved";
+    l.decidedAt = clock();
+    let changed = 0;
+    if (approved) for (const f of this.forms) if (f.kind === "attendance" && f.data.marks[l.sid] === "absent") { f.data.marks[l.sid] = "excused"; changed++; }
+    this.audit("APFOR", "excuse." + (approved ? "approved" : "not_approved"), l.name + ": " + changed + " absence(s) excused");
+    return changed;
+  }
+
+  /* ---- reports ---- */
+  paperSaved() { return this.forms.filter((f) => f.status !== "draft").length + this.admits.length; }
+  summary(section) {
+    const c = { present: 0, late: 0, absent: 0, excused: 0 };
+    for (const f of this.forms) if (f.kind === "attendance" && f.section === section) for (const v of Object.values(f.data.marks)) c[v]++;
+    return c;
+  }
+  csv(section, kind) {
+    const cell = (v) => { let s = String(v == null ? "" : v);
+      if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;  // stop spreadsheet formula injection from typed names
+      return '"' + s.replace(/"/g, '""') + '"'; };
+    const rows = [];
+    if (kind === "mfi") {
+      rows.push(["section", "list", "student", "violation", "state"]);
+      for (const f of this.forms.filter((x) => x.kind === "mfi" && x.section === section)) {
+        for (const e of f.data.entries) rows.push([section, "dress code", this.student(e.sid).name, e.violation, f.status]);
+        for (const id of f.data.absentees) rows.push([section, "absentees", this.student(id).name, "", f.status]);
+      }
+    } else if (kind === "cleanliness") {
+      rows.push(["section", "item", "done", "remarks", "state"]);
+      for (const f of this.forms.filter((x) => x.kind === "cleanliness" && x.section === section))
+        for (const c of f.data.checks) rows.push([section, c.label, c.done ? "yes" : "no", f.data.remarks, f.status]);
+    } else {
+      rows.push(["section", "period", "teacher", "student", "status", "admitted_at", "sheet_state"]);
+      for (const f of this.forms.filter((x) => x.kind === "attendance" && x.section === section).sort((a, b) => a.key - b.key)) {
+        if (f.data.teacherMark) rows.push([section, f.key, f.teacher, "Teacher: " + f.teacher, LABEL[f.data.teacherMark], "", f.status]);
+        for (const s of this.studentsOf(section)) rows.push([section, f.key, f.teacher, s.name, LABEL[f.data.marks[s.id]] || "", f.data.admitted[s.id] || "", f.status]);
+      }
+    }
+    return rows.map((r) => r.map(cell).join(",")).join("\r\n") + "\r\n";
+  }
+}
+/* STORE:END */
+</script>
+
+<script>
+"use strict";
+/* ============================== views and controller ============================== */
+const store = new Store();
+const ui = { section: null, toasts: [] };
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const icon = (n, s = 20) => `<svg class="icon" width="${s}" height="${s}" aria-hidden="true" focusable="false"><use href="#i-${n}"/></svg>`;
+const STATE_ICON = { draft: "beadle-sheet", submitted: "send", approved: "approve", sent_back: "reject" };
+const stateChip = (s) => `<span class="chip chip-${s}">${icon(STATE_ICON[s], 16)}${STATE_LABEL[s]}</span>`;
+const statusChip = (s) => s ? `<span class="chip chip-${s}">${icon("status-" + s, 16)}${LABEL[s]}</span>` : `<span class="chip chip-none">Not marked</span>`;
+const mini = (s, admitted) => s
+  ? `<span class="mini chip-${s}" title="${LABEL[s]}">${icon("status-" + s, 14)}${LABEL[s][0]}<span class="sr-only">${LABEL[s].slice(1)}${admitted ? ", admitted" : ""}</span></span>`
+  : `<span class="mini chip-none" title="No record">&ndash;<span class="sr-only">No record</span></span>`;
+const longDate = () => new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+const paper = () => `<p class="paper">${icon("leaf-paper-saved", 18)}<span><span class="mono">${store.paperSaved()}</span> sheets of paper saved</span></p>`;
+const empty = (art, title, text = "") => `<div class="empty"><img src="assets/illustrations/${art}.svg" alt="" width="220" height="165"><h3>${esc(title)}</h3>${text ? `<p class="muted">${esc(text)}</p>` : ""}</div>`;
+const ctxBeadle = () => ({ role: "beadle", section: ui.section });
+const ctxApfor = () => ({ role: "apfor" });
+
+function toast(msg, kind = "ok") {
+  const box = $("#toasts");
+  const el = document.createElement("div");
+  el.className = "alert toast alert-" + kind;
+  el.innerHTML = icon(kind === "err" ? "reject" : "approve", 20) + "<span></span>";
+  el.lastChild.textContent = msg;
+  box.appendChild(el);
+  setTimeout(() => el.remove(), kind === "err" ? 6000 : 3500);
+}
+
+/* ---------------- views ---------------- */
+function viewHome() {
+  const role = (img, title, text, href, cta) => `
+    <a class="card card-link role-card" href="${href}"><img src="assets/illustrations/${img}.svg" alt="" width="480" height="320">
+    <h2>${title}</h2><p class="muted">${text}</p><span class="go">${cta} ${icon("chevron-right", 18)}</span></a>`;
+  return `
+  <section class="hero" aria-label="About Beadle Buddy">
+    <div><p class="eyebrow" style="color:var(--azure-100)">Ateneo de Manila Senior High School</p>
+      <h1>Class Beadle forms and Admit to Class slips, without the paper.</h1>
+      <p>Beadles mark attendance, dress code and cleanliness on a phone. Teachers approve in two taps. The APFOR sees every record as it happens, with nothing to re-type.</p></div>
+    <img class="flow" src="assets/illustrations/hero-flow.svg" alt="Flow: the Beadle sends to the Teacher, the Teacher approves, the APFOR reviews and admits students to class." width="1000" height="360">
+  </section>
+  <h2>Choose a screen</h2>
+  <div class="grid g3">
+    ${role("role-beadle", "Beadle", "Type your class list, mark each period, log dress code and cleanliness, then send.", "#/beadle", "Open the Beadle screen")}
+    ${role("role-teacher", "Teacher", "See the forms sent to you. Approve, or send back with a reason.", "#/teacher", "Open the Teacher screen")}
+    ${role("role-apfor", "APFOR", "Check records, decide excuse letters and admit late students to class.", "#/apfor", "Open the APFOR screen")}
+  </div>
+  <p class="muted small mt">Start with the Beadle screen: nothing is built in, so you type the student names yourself. All names stay in your browser.</p>`;
+}
+
+/* ----- Beadle ----- */
+function viewBeadlePick() {
+  return `<div class="page-head"><div><p class="eyebrow">Beadle</p><h1>Which section are you the Beadle of?</h1></div></div>
+  <div class="grid g3">${store.sections.map((s) => `
+    <button class="card card-link" style="text-align:left;font:inherit;cursor:pointer" data-action="pickSection" data-section="${esc(s.name)}" data-key="pick-${esc(s.name)}">
+      <div class="card-head">${icon("students", 22)}<h2>${s.grade} - ${esc(s.name)}</h2></div>
+      <p class="muted">${esc(s.strand)} · adviser ${esc(s.adviser)}</p>
+      <p class="small"><span class="mono">${store.studentsOf(s.name).length}</span> students in the class list</p>
+      <span class="go">Open ${icon("chevron-right", 18)}</span></button>`).join("")}</div>`;
+}
+function beadleHead(sec, title, sub) {
+  return `<div class="page-head"><div><p class="eyebrow">${esc(title)} · ${sec.grade} - ${esc(sec.name)}</p>${sub}</div></div>`;
+}
+function viewBeadleHome() {
+  const sec = store.section(ui.section), name = sec.name;
+  const sheets = PERIODS.map((p) => store.forms.find((f) => f.kind === "attendance" && f.section === name && f.key === p.n));
+  const sent = sheets.filter((f) => f && store.locked(f)).length;
+  const back = sheets.filter((f) => f && f.status === "sent_back");
+  const mfi = { dress: store.forms.find((f) => f.kind === "mfi" && f.section === name && f.key === "dress"), absentees: store.forms.find((f) => f.kind === "mfi" && f.section === name && f.key === "absentees") };
+  const clean = store.forms.find((f) => f.kind === "cleanliness" && f.section === name);
+  const n = store.studentsOf(name).length;
+  const admits = store.admits.filter((a) => a.section === name);
+  const day = store.dayReports[name];
+  return `
+  <div class="page-head"><div><p class="eyebrow">Beadle · ${sec.grade} - ${esc(name)} · ${esc(sec.strand)}</p><h1>${longDate()}</h1></div>
+    <a class="btn btn-sm" href="#/beadle/pick">Switch section</a></div>
+  ${back.map((f) => `<div class="alert alert-err" role="alert">${icon("reject", 20)}<span><strong>Period ${f.key} was sent back.</strong> ${esc(f.reason)} <a href="#/beadle/sheet/${f.key}">Fix it now</a></span></div>`).join("")}
+  ${n === 0 ? `<div class="alert alert-info" role="status">${icon("add-student", 20)}<span><strong>Start here.</strong> No students yet. <a href="#/beadle/list">Type your class list</a> first.</span></div>` : ""}
+  <div class="grid g3">
+    <a class="card card-link feature" href="#/beadle/list"><span class="feature-icon">${icon("students", 28)}</span><span class="title">CLASS LIST</span>
+      <span class="muted"><span class="mono">${n}</span> students. You type the names.</span><span class="go">${n ? "Edit" : "Type names"} ${icon("chevron-right", 18)}</span></a>
+    <a class="card card-link feature" href="#/beadle/sheet/${firstOpenPeriod(name)}"><span class="feature-icon">${icon("beadle-sheet", 28)}</span><span class="title">BEADLE SHEET</span>
+      <span class="muted">Attendance per period. <span class="mono">${sent}/${PERIODS.length}</span> periods sent today.</span>${day ? `<span><span class="chip chip-approved">${icon("send", 16)}Sent to APFOR</span></span>` : ""}<span class="go">Open ${icon("chevron-right", 18)}</span></a>
+    <a class="card card-link feature" href="#/beadle/mfi/dress"><span class="feature-icon">${icon("mfi-dress-code", 28)}</span><span class="title">MFI SHEET</span>
+      <span class="muted">Dress code infractions, then absentees.</span>
+      <span class="row"><span class="small">Dress code:</span>${stateChip(mfi.dress ? mfi.dress.status : "draft")}<span class="small">Absentees:</span>${stateChip(mfi.absentees ? mfi.absentees.status : "draft")}</span>
+      <span class="go">Open ${icon("chevron-right", 18)}</span></a>
+    <a class="card card-link feature" href="#/beadle/clean"><span class="feature-icon">${icon("cleanliness", 28)}</span><span class="title">CLEANLINESS FORM</span>
+      <span class="muted">Room checklist for the adviser.</span><span>${stateChip(clean ? clean.status : "draft")}</span><span class="go">Open ${icon("chevron-right", 18)}</span></a>
+  </div>
+  <div class="grid g2 mt">
+    <section class="card" aria-labelledby="ad-h"><div class="card-head">${icon("admit-to-class", 22)}<h2 id="ad-h">Admitted to class today</h2></div>
+      ${admits.length ? `<ul class="list" style="border:0">${admits.map((a) => `<li class="li" style="padding:10px 0"><span class="body"><strong>${esc(a.name)}</strong><span class="small muted">${esc(a.reason)} · Period ${a.period}</span></span><span class="chip chip-admitted">${icon("admit-to-class", 16)}Admitted <time>${a.at}</time></span></li>`).join("")}</ul>`
+        : `<p class="muted">No Admit to Class slips yet. When the APFOR admits a student, it shows here and on the Beadle Sheet.</p>`}</section>
+    <section class="card" aria-labelledby="eod-h"><div class="card-head">${icon("send", 22)}<h2 id="eod-h">End of day</h2></div>
+      ${day ? `<p>Sent to the APFOR at <time>${day}</time>. You are done for today.</p>`
+        : store.dayComplete(name) ? `<p>Every period is with its teacher. Send today to the APFOR.</p><button class="btn btn-primary" data-action="sendDay" data-key="send-day">${icon("send", 18)}Send to APFOR</button>`
+        : `<p class="muted">After the last period, send the whole day to the APFOR from here or from the Beadle Sheet.</p>`}
+      ${paper()}</section>
+  </div>`;
+}
+function firstOpenPeriod(name) {
+  for (const p of PERIODS) { const f = store.forms.find((x) => x.kind === "attendance" && x.section === name && x.key === p.n); if (!f || !store.locked(f)) return p.n; }
+  return PERIODS[PERIODS.length - 1].n;
+}
+function viewBeadleList() {
+  const name = ui.section, list = store.studentsOf(name);
+  return `${beadleHead(store.section(name), "Class list", `<h1>Type your class list</h1><p class="muted">Nothing is built in. Type one name per line, or separate several with a semicolon.</p>`)}
+  <div class="grid g2">
+    <section class="card"><form data-form="addNames"><div class="field"><label for="names">Student names</label>
+      <textarea id="names" name="names" placeholder="Cruz, Juan&#10;Dela Cruz, Maria&#10;Reyes, Ana" data-key="names"></textarea></div>
+      <button class="btn btn-primary" type="submit">${icon("plus", 18)}Add names</button>
+      <p class="small muted mt" style="margin-bottom:0">Duplicates are skipped. You can remove a typo until that student has a mark.</p></form></section>
+    <section class="card"><div class="card-head">${icon("students", 22)}<h2>${list.length} student${list.length === 1 ? "" : "s"}</h2></div>
+      ${list.length ? `<ol class="roster" style="border:1.5px solid var(--line);border-radius:12px">${list.map((s, i) => `<li class="rrow" style="grid-template-columns:1fr auto;align-items:center;padding:8px 12px">
+        <span class="rname"><span class="num">${i + 1}</span><span class="who">${esc(s.name)}</span></span>
+        <button class="btn btn-sm" data-action="removeStudent" data-id="${s.id}" ${store.studentInUse(s.id) ? "disabled" : ""} aria-label="Remove ${esc(s.name)}" data-key="rm-${s.id}">${icon("close", 16)}Remove</button></li>`).join("")}</ol>`
+        : empty("empty-no-records", "No students yet", "Type the names on the left.")}
+      ${list.length ? `<p class="mt"><a class="btn btn-primary" href="#/beadle/sheet/1">${icon("beadle-sheet", 18)}Go to the Beadle Sheet</a></p>` : ""}</section>
+  </div>`;
+}
+function seg(f, sid, current, locked, label) {
+  return `<div class="seg" role="group" aria-label="Status for ${esc(label)}">${STATUSES.map((s) =>
+    `<button type="button" data-action="mark" data-form="${f.id}" data-sid="${sid}" data-status="${s}" aria-pressed="${current === s}" ${locked ? "disabled" : ""}>${icon("status-" + s, 18)}<span>${LABEL[s]}</span></button>`).join("")}</div>`;
+}
+function viewSheet(periodNo) {
+  const name = ui.section, sec = store.section(name);
+  const p = PERIODS.find((x) => x.n === periodNo);
+  if (!p) return `<div class="card">${empty("empty-no-records", "No such period")}</div>`;
+  const f = store.getForm("attendance", name, p.n), locked = store.locked(f), list = store.studentsOf(name);
+  const next = PERIODS.find((x) => x.n > p.n), day = store.dayReports[name];
+  const banner = f.status === "sent_back" ? `<div class="alert alert-err" role="alert">${icon("reject", 20)}<span><strong>Sent back by ${esc(f.teacher)}:</strong> ${esc(f.reason)} Fix the marks, then send again.</span></div>`
+    : f.status === "submitted" ? `<div class="alert alert-warn">${icon("send", 20)}<span>Sent to ${esc(f.teacher)} at <time>${f.submittedAt}</time>. Waiting for approval; this period is locked.</span></div>`
+    : f.status === "approved" ? `<div class="alert alert-ok">${icon("approve", 20)}<span>Approved by ${esc(f.teacher)} at <time>${f.decidedAt}</time>.</span></div>` : "";
+  return `
+  <div id="sheet-root" data-form="${f.id}">
+  <div class="page-head"><div><p class="eyebrow">Beadle Sheet · ${sec.grade} - ${esc(name)} · ${longDate().split(",").slice(0, 2).join(",")}</p>
+    <h1>Period ${p.n} <span class="muted mono" style="font-size:1rem;font-weight:500">${p.start}-${p.end}</span></h1>
+    <p class="muted">${esc(store.subjectFor(name, p.n))} · ${esc(f.teacher)}</p></div>${stateChip(f.status)}</div>
+  <nav class="tabs" aria-label="Periods">${PERIODS.map((q) => { const g = store.forms.find((x) => x.kind === "attendance" && x.section === name && x.key === q.n); const st = g ? g.status : "draft";
+    return `<a class="tab" href="#/beadle/sheet/${q.n}" ${q.n === p.n ? 'aria-current="page"' : ""}><strong>P${q.n}</strong><span class="st s-${st}">${st === "approved" ? icon("approve", 14) + "Approved" : st === "submitted" ? icon("send", 14) + "Sent" : st === "sent_back" ? icon("reject", 14) + "Fix" : `<span class="mono">${q.start}</span>`}</span></a>`; }).join("")}</nav>
+  ${banner}
+  ${list.length === 0 ? `<div class="card">${empty("empty-no-records", "No students yet", "Type your class list first.")}<p style="text-align:center"><a class="btn btn-primary" href="#/beadle/list">${icon("add-student", 18)}Type the class list</a></p></div>` : `
+  <section class="card" style="padding:0" aria-labelledby="roster-h"><h2 id="roster-h" class="sr-only">Class list</h2>
+    <div class="rrow trow"><div class="rname">${icon("teacher", 20)}<span class="who">${esc(f.teacher)}</span><span class="small muted">Teacher</span></div>${seg(f, "teacher", f.data.teacherMark, locked, f.teacher)}</div>
+    ${locked ? "" : `<div class="row" style="padding:12px 14px;border-bottom:1px solid var(--line)"><button type="button" class="btn btn-sm" data-action="markAll" data-form="${f.id}" data-key="mark-all">${icon("check", 18)}Mark all present</button><span class="small muted">Then tap only the exceptions.</span></div>`}
+    <ol class="roster">${list.map((s, i) => `<li class="rrow" data-sid="${s.id}"><div class="rname"><span class="num">${i + 1}</span><span class="who">${esc(s.name)}</span>
+      <span data-admit>${f.data.admitted[s.id] ? `<span class="chip chip-admitted">${icon("admit-to-class", 16)}Admitted <time>${f.data.admitted[s.id]}</time></span>` : ""}</span></div>${seg(f, s.id, f.data.marks[s.id], locked, s.name)}</li>`).join("")}</ol></section>`}
+  </div>
+  <div class="bar"><div class="bar-in">
+    <span class="small" style="font-weight:600;color:var(--ink-2)"><span class="dot"></span>Saved in this page</span>
+    <span class="small muted"><span class="mono" id="marked">${list.length - store.unmarked(f).length}</span>/<span class="mono">${list.length}</span> marked</span>
+    <span class="spacer"></span>
+    ${store.dayComplete(name) && !day ? `<button class="btn btn-primary" data-action="sendDay" data-key="send-day">${icon("send", 18)}Send to APFOR</button>` : day ? `<span class="chip chip-approved">${icon("send", 16)}Day sent to APFOR</span>` : ""}
+    ${!locked && list.length ? `<button class="btn btn-primary" data-action="sendSheet" data-form="${f.id}" data-key="send-sheet">${icon("send", 18)}Send to Teacher</button>`
+      : locked && next ? `<a class="btn" href="#/beadle/sheet/${next.n}">Period ${next.n} ${icon("chevron-right", 18)}</a>` : ""}
+  </div></div>`;
+}
+function viewMfi(phase) {
+  const name = ui.section, sec = store.section(name);
+  const f = store.getForm("mfi", name, phase), locked = store.locked(f), list = store.studentsOf(name);
+  const banner = f.status === "sent_back" ? `<div class="alert alert-err" role="alert">${icon("reject", 20)}<span><strong>Sent back:</strong> ${esc(f.reason)}</span></div>`
+    : locked ? `<div class="alert alert-${f.status === "approved" ? "ok" : "warn"}">${icon(f.status === "approved" ? "approve" : "send", 20)}<span>${STATE_LABEL[f.status]}${f.submittedAt ? ` · sent <time>${f.submittedAt}</time>` : ""}.</span></div>` : "";
+  const tabs = `<nav class="tabs" aria-label="MFI steps"><a class="tab" href="#/beadle/mfi/dress" ${phase === "dress" ? 'aria-current="page"' : ""}><strong>1</strong><span class="st">Dress code</span></a><a class="tab" href="#/beadle/mfi/absentees" ${phase === "absentees" ? 'aria-current="page"' : ""}><strong>2</strong><span class="st">Absentees</span></a></nav>`;
+  const noStudents = list.length === 0 ? `<div class="card">${empty("empty-no-records", "No students yet", "Type your class list first.")}<p style="text-align:center"><a class="btn btn-primary" href="#/beadle/list">Type the class list</a></p></div>` : "";
+  let body;
+  if (noStudents) body = noStudents;
+  else if (phase === "dress") {
+    body = `<section class="card">${locked ? "" : `<form data-form="mfiAdd" class="form-row" style="margin-bottom:16px"><input type="hidden" name="form" value="${f.id}">
+      <div><label for="m-st">Student</label><select id="m-st" name="sid" required><option value="">Choose a student</option>${list.map((s) => `<option value="${s.id}">${esc(s.name)}</option>`).join("")}</select></div>
+      <div><label for="m-vi">Violation</label><select id="m-vi" name="violation" required><option value="">Choose the violation</option>${VIOLATIONS.map((v) => `<option>${esc(v)}</option>`).join("")}</select></div>
+      <div><button class="btn btn-block" type="submit">${icon("violation-flag", 18)}Log infraction</button></div></form>`}
+      ${f.data.entries.length ? `<ul class="list">${f.data.entries.map((e, i) => `<li class="li"><span class="lead">${icon("violation-flag", 20)}</span><span class="body"><strong>${esc(store.student(e.sid).name)}</strong><span class="small muted">${esc(e.violation)}</span></span>
+        ${locked ? "" : `<button class="btn btn-sm" data-action="mfiRemove" data-form="${f.id}" data-i="${i}" aria-label="Remove ${esc(store.student(e.sid).name)}">${icon("close", 16)}Remove</button>`}</li>`).join("")}</ul>`
+        : empty("empty-all-caught-up", "No infractions logged", "Pick a student and the violation above.")}</section>
+      ${locked ? "" : `<p class="mt"><button class="btn btn-primary" data-action="sendForm" data-form="${f.id}">${icon("send", 18)}Send to Teacher</button> <span class="small muted">No infractions today? Send it empty.</span></p>`}`;
+  } else {
+    const prefill = new Set(f.data.absentees);
+    const sheetAbsent = new Set();
+    for (const g of store.forms) if (g.kind === "attendance" && g.section === name) for (const [sid, v] of Object.entries(g.data.marks)) if (v === "absent") sheetAbsent.add(Number(sid));
+    body = `<form class="card" data-form="mfiAbsent"><input type="hidden" name="form" value="${f.id}"><div class="card-head">${icon("status-absent", 22)}<h2>Who is absent?</h2></div>
+      ${!locked && sheetAbsent.size && !prefill.size ? `<p class="small muted">Students marked Absent on today's Beadle Sheet are pre-ticked.</p>` : ""}
+      <fieldset style="border:0;padding:0;margin:0" ${locked ? "disabled" : ""}><legend class="sr-only">Absent students</legend>
+      ${list.map((s) => `<label class="check"><input type="checkbox" name="sid" value="${s.id}" ${(prefill.has(s.id) || (!prefill.size && !locked && sheetAbsent.has(s.id))) ? "checked" : ""}>${esc(s.name)}</label>`).join("")}</fieldset>
+      ${locked ? "" : `<div class="row mt"><button class="btn" type="submit" name="then" value="save">Save list</button><button class="btn btn-primary" type="submit" name="then" value="send">${icon("send", 18)}Send to Teacher</button></div>`}</form>`;
+  }
+  return `${beadleHead(sec, "MFI Sheet", `<h1>${phase === "dress" ? "Dress code" : "Absentees"}</h1><p class="muted">Goes to the adviser, ${esc(f.teacher)}.</p>`)}${tabs}${banner}${body}`;
+}
+function viewClean() {
+  const name = ui.section, sec = store.section(name), f = store.getForm("cleanliness", name), locked = store.locked(f);
+  const banner = f.status === "sent_back" ? `<div class="alert alert-err" role="alert">${icon("reject", 20)}<span><strong>Sent back:</strong> ${esc(f.reason)}</span></div>`
+    : locked ? `<div class="alert alert-${f.status === "approved" ? "ok" : "warn"}">${icon(f.status === "approved" ? "approve" : "send", 20)}<span>${STATE_LABEL[f.status]}${f.submittedAt ? ` · sent <time>${f.submittedAt}</time>` : ""}.</span></div>` : "";
+  return `<div class="page-head"><div><p class="eyebrow">Cleanliness Form · ${sec.grade} - ${esc(name)}</p><h1>Room checklist</h1><p class="muted">Goes to the adviser, ${esc(f.teacher)}.</p></div>${stateChip(f.status)}</div>${banner}
+  <form class="card" data-form="clean"><fieldset style="border:0;padding:0;margin:0" ${locked ? "disabled" : ""}><legend class="sr-only">Checklist</legend>
+    ${f.data.checks.map((c, i) => `<label class="check"><input type="checkbox" data-action="toggleCheck" data-form="${f.id}" data-i="${i}" ${c.done ? "checked" : ""}>${esc(c.label)}</label>`).join("")}
+    <div class="field" style="margin-top:12px"><label for="remarks">Remarks (optional)</label><textarea id="remarks" name="remarks" maxlength="500" style="min-height:88px" data-action="remarks" data-form="${f.id}">${esc(f.data.remarks)}</textarea></div>
+    ${locked ? "" : `<button class="btn btn-primary" type="submit">${icon("send", 18)}Send to Teacher</button>`}</fieldset></form>`;
+}
+
+/* ----- Teacher ----- */
+function viewTeacher() {
+  const list = store.pending();
+  return `<div class="page-head"><div><p class="eyebrow">Teacher</p><h1>Pending Approvals <span class="mono muted" style="font-size:1.1rem">(${list.length})</span></h1>
+    <p class="muted">Forms from every Beadle. Each is approved as the teacher it is addressed to.</p></div>${paper()}</div>
+  ${list.length ? `<ul class="list">${list.map((f) => `<li><a class="li" href="#/teacher/review/${f.id}"><span class="lead">${icon({ attendance: "beadle-sheet", mfi: "mfi-dress-code", cleanliness: "cleanliness" }[f.kind], 22)}</span>
+    <span class="body"><strong>${esc(f.section)} · ${esc(f.title)}</strong><span class="small muted">for ${esc(f.teacher)} · sent <time>${f.submittedAt}</time></span></span><span class="btn btn-sm" aria-hidden="true">Review ${icon("chevron-right", 16)}</span></a></li>`).join("")}</ul>`
+    : `<div class="card">${empty("empty-all-caught-up", "You are all caught up", "New forms from the Beadles show here.")}</div>`}`;
+}
+function viewReview(id) {
+  const f = store.formById(id);
+  if (!f) return `<div class="card">${empty("empty-no-records", "Form not found")}</div>`;
+  let body = "";
+  if (f.kind === "attendance") {
+    const list = store.studentsOf(f.section), counts = { present: 0, late: 0, absent: 0, excused: 0 };
+    for (const v of Object.values(f.data.marks)) counts[v]++;
+    body = `<div class="row" style="margin-bottom:12px">${STATUSES.map((s) => `<span class="chip chip-${s}">${icon("status-" + s, 16)}${LABEL[s]} <span class="mono">${counts[s]}</span></span>`).join("")}</div>
+    <div class="twrap"><table><thead><tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Status</th></tr></thead><tbody>
+    ${f.data.teacherMark ? `<tr><td></td><td><strong>${esc(f.teacher)}</strong> <span class="small muted">(teacher)</span></td><td>${statusChip(f.data.teacherMark)}</td></tr>` : ""}
+    ${list.map((s, i) => `<tr><td class="mono muted">${i + 1}</td><td>${esc(s.name)}</td><td>${statusChip(f.data.marks[s.id])}${f.data.admitted[s.id] ? ` <span class="chip chip-admitted">${icon("admit-to-class", 16)}Admitted <time>${f.data.admitted[s.id]}</time></span>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
+  } else if (f.kind === "mfi") {
+    const rows = f.data.entries.map((e) => `<tr><td>${esc(store.student(e.sid).name)}</td><td>${icon("violation-flag", 16)} ${esc(e.violation)}</td></tr>`)
+      .concat(f.data.absentees.map((i) => `<tr><td>${esc(store.student(i).name)}</td><td>${statusChip("absent")}</td></tr>`));
+    body = rows.length ? `<div class="twrap"><table><thead><tr><th scope="col">Student</th><th scope="col">${f.key === "dress" ? "Violation" : "Status"}</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>`
+      : `<div class="card">${empty("empty-all-caught-up", "Nothing logged", "The Beadle reported no entries.")}</div>`;
+  } else {
+    body = `<ul class="list">${f.data.checks.map((c) => `<li class="li">${c.done ? `<span class="chip chip-present">${icon("check", 16)}Done</span>` : `<span class="chip chip-absent">${icon("close", 16)}Not done</span>`}<span class="body">${esc(c.label)}</span></li>`).join("")}</ul>
+      ${f.data.remarks ? `<p class="mt"><strong>Remarks:</strong> ${esc(f.data.remarks)}</p>` : ""}`;
+  }
+  const actions = f.status === "submitted" ? `<div class="card row" style="margin-bottom:16px">
+    <button class="btn btn-approve" data-action="approve" data-form="${f.id}" data-key="approve">${icon("approve", 20)}Approve</button>
+    <details style="flex:1;min-width:240px"><summary>Send back to the Beadle</summary>
+      <form data-form="sendBack" style="margin-top:10px"><input type="hidden" name="form" value="${f.id}"><label for="reason">What needs fixing?</label>
+      <input id="reason" name="reason" type="text" maxlength="300" required placeholder="e.g. Cruz was in the clinic, mark Excused">
+      <button class="btn btn-reject" style="margin-top:8px" type="submit">${icon("reject", 18)}Send back</button></form></details></div>`
+    : f.status === "sent_back" ? `<div class="alert alert-err">${icon("reject", 20)}<span>Sent back: ${esc(f.reason)}</span></div>` : "";
+  return `<p><a href="#/teacher">Back to Pending Approvals</a></p>
+  <div class="page-head"><div><p class="eyebrow">${esc(f.section)}</p><h1>${esc(f.title)}</h1><p class="muted">for ${esc(f.teacher)}${f.submittedAt ? ` · sent <time>${f.submittedAt}</time>` : ""}</p></div>${stateChip(f.status)}</div>${actions}${body}`;
+}
+function viewHistory() {
+  const items = store.forms.filter((f) => f.status === "approved" || f.status === "sent_back");
+  return `<div class="page-head"><div><p class="eyebrow">Teacher</p><h1>History</h1></div></div>
+  ${items.length ? `<ul class="list">${items.map((f) => `<li><a class="li" href="#/teacher/review/${f.id}"><span class="body"><strong>${esc(f.section)} · ${esc(f.title)}</strong><span class="small muted">decided <time>${f.decidedAt}</time> · ${esc(f.teacher)}</span></span>${stateChip(f.status)}</a></li>`).join("")}</ul>`
+    : `<div class="card">${empty("empty-no-records", "Nothing here yet", "Forms you approve or send back are listed here.")}</div>`}`;
+}
+
+/* ----- APFOR ----- */
+function viewApfor() {
+  const pend = store.excuses.filter((e) => e.decision === "pending").length;
+  return `<div class="page-head"><div><p class="eyebrow">APFOR · ${longDate()}</p><h1>Pick a section</h1></div>${paper()}</div>
+  <div class="grid g3" style="margin-bottom:16px">
+    <a class="card card-link row" href="#/apfor/excuses"><span class="feature-icon">${icon("excuse-letter", 24)}</span><span><strong>Excuse letters</strong><br><span class="muted"><span class="mono">${pend}</span> waiting for a decision</span></span></a>
+    <a class="card card-link row" href="#/apfor/admit"><span class="feature-icon">${icon("admit-to-class", 24)}</span><span><strong>Admit Student to Class</strong><br><span class="muted"><span class="mono">${store.admits.length}</span> admitted today</span></span></a>
+    <a class="card card-link row" href="#/apfor/log"><span class="feature-icon">${icon("check-records", 24)}</span><span><strong>Audit log</strong><br><span class="muted"><span class="mono">${store.log.length}</span> entries</span></span></a>
+  </div>
+  <div class="grid g3">${store.sections.map((s) => { const sum = store.summary(s.name);
+    const sent = PERIODS.filter((p) => { const f = store.forms.find((x) => x.kind === "attendance" && x.section === s.name && x.key === p.n); return f && store.locked(f); }).length;
+    return `<a class="card card-link" href="#/apfor/records/${esc(s.name)}"><div class="card-head">${icon("students", 22)}<h2>${s.grade} - ${esc(s.name)}</h2><span class="spacer"></span><span class="small muted">${esc(s.strand)}</span></div>
+      <p class="small muted"><span class="mono">${store.studentsOf(s.name).length}</span> students · <span class="mono">${sent}/${PERIODS.length}</span> periods sent${store.dayReports[s.name] ? " · day sent to APFOR" : ""}</p>
+      <div class="row">${STATUSES.map((st) => `<span class="chip chip-${st}">${icon("status-" + st, 14)}<span class="mono">${sum[st]}</span><span class="sr-only"> ${LABEL[st]}</span></span>`).join("")}</div>
+      <p class="go" style="margin:12px 0 0">${icon("check-records", 18)}Check Records</p></a>`; }).join("")}</div>`;
+}
+function viewRecords(name, kind = "all") {
+  const sec = store.section(name);
+  if (!sec) return `<div class="card">${empty("empty-no-records", "No such section")}</div>`;
+  const forms = {};
+  for (const f of store.forms) if (f.kind === "attendance" && f.section === name) forms[f.key] = f;
+  const list = store.studentsOf(name), sum = store.summary(name);
+  const mfi = store.forms.filter((f) => f.kind === "mfi" && f.section === name), clean = store.forms.find((f) => f.kind === "cleanliness" && f.section === name);
+  const admits = store.admits.filter((a) => a.section === name);
+  const att = Object.keys(forms).length ? `<div class="twrap"><table class="gt"><thead><tr><th scope="col">Student</th>${PERIODS.map((p) => `<th scope="col" class="c">P${p.n}<br><span class="small" style="text-transform:none;letter-spacing:0">${forms[p.n] ? STATE_LABEL[forms[p.n].status] : "&ndash;"}</span></th>`).join("")}</tr></thead>
+    <tbody>${list.map((s) => `<tr><th scope="row">${esc(s.name)}</th>${PERIODS.map((p) => `<td class="c">${mini(forms[p.n] && forms[p.n].data.marks[s.id], forms[p.n] && forms[p.n].data.admitted[s.id])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    <p class="small muted">P = Present, L = Late, A = Absent, E = Excused. Day sent to APFOR: ${store.dayReports[name] ? "<time>" + store.dayReports[name] + "</time>" : "not yet"}.</p>`
+    : `<div class="card">${empty("empty-no-records", "No attendance recorded", "Nothing was sent for today yet.")}</div>`;
+  return `<div class="page-head"><div><p class="eyebrow">Check Records</p><h1>${sec.grade} - ${esc(name)} <span class="muted" style="font-size:1rem">${esc(sec.strand)}</span></h1><p class="muted">${longDate()}</p></div>
+    <div class="row"><a class="btn" href="#/apfor/records/${esc(name)}" data-key="r-all">All</a><button class="btn" data-action="csv" data-section="${esc(name)}" data-kind="attendance">${icon("send", 16)}Export attendance CSV</button>
+    <button class="btn" data-action="csv" data-section="${esc(name)}" data-kind="mfi">MFI CSV</button><button class="btn" data-action="csv" data-section="${esc(name)}" data-kind="cleanliness">Cleanliness CSV</button></div></div>
+  <div class="card form-row" style="margin-bottom:16px"><div><label for="f-sec">Section</label><select id="f-sec" data-action="gotoSection">${store.sections.map((s) => `<option value="${esc(s.name)}" ${s.name === name ? "selected" : ""}>${s.grade} - ${esc(s.name)}</option>`).join("")}</select></div></div>
+  <section aria-labelledby="att-h" style="margin-bottom:24px"><div class="row" style="margin-bottom:8px"><h2 id="att-h" style="margin:0">Attendance</h2>${STATUSES.map((s) => `<span class="chip chip-${s}">${icon("status-" + s, 14)}${LABEL[s]} <span class="mono">${sum[s]}</span></span>`).join("")}</div>${att}
+    ${admits.length ? `<div class="card mt"><div class="card-head">${icon("admit-to-class", 20)}<h3>Admitted to class</h3></div><ul style="margin:0;padding-left:18px">${admits.map((a) => `<li>${esc(a.name)}, ${esc(a.reason)}, Period ${a.period}, <time>${a.at}</time></li>`).join("")}</ul></div>` : ""}</section>
+  <section aria-labelledby="mfi-h" style="margin-bottom:24px"><h2 id="mfi-h">MFI Sheet</h2>${mfi.length ? `<div class="grid g2">${mfi.map((m) => `<div class="card"><div class="card-head"><h3>${m.key === "dress" ? "Dress code" : "Absentees"}</h3><span class="spacer"></span>${stateChip(m.status)}</div>
+    ${m.data.entries.length || m.data.absentees.length ? `<ul style="margin:0;padding-left:18px">${m.data.entries.map((e) => `<li>${esc(store.student(e.sid).name)}: ${esc(e.violation)}</li>`).join("")}${m.data.absentees.map((i) => `<li>${esc(store.student(i).name)}: absent</li>`).join("")}</ul>` : `<p class="muted">No entries.</p>`}</div>`).join("")}</div>` : `<div class="card">${empty("empty-no-records", "No MFI Sheet yet")}</div>`}</section>
+  <section aria-labelledby="cl-h"><h2 id="cl-h">Cleanliness Form</h2>${clean ? `<div class="card"><div class="card-head"><span class="spacer"></span>${stateChip(clean.status)}</div><ul class="list" style="border:0">${clean.data.checks.map((c) => `<li class="li" style="padding:8px 0">${c.done ? `<span class="chip chip-present">${icon("check", 16)}Done</span>` : `<span class="chip chip-absent">${icon("close", 16)}Not done</span>`}<span class="body">${esc(c.label)}</span></li>`).join("")}</ul>${clean.data.remarks ? `<p><strong>Remarks:</strong> ${esc(clean.data.remarks)}</p>` : ""}</div>` : `<div class="card">${empty("empty-no-records", "No Cleanliness Form yet")}</div>`}</section>`;
+}
+function viewExcuses() {
+  const pend = store.excuses.filter((e) => e.decision === "pending"), done = store.excuses.filter((e) => e.decision !== "pending");
+  return `<div class="page-head"><div><p class="eyebrow">APFOR</p><h1>Excuse letters</h1></div></div>
+  <section class="card" style="margin-bottom:16px"><div class="card-head">${icon("plus", 20)}<h2>Record a letter</h2></div>
+    <form data-form="excuse" class="form-row"><div style="grid-column:span 2"><label for="ex-st">Student</label><select id="ex-st" name="sid" required><option value="">Choose a student</option>
+      ${store.sections.map((s) => `<optgroup label="${s.grade} - ${esc(s.name)}">${store.studentsOf(s.name).map((st) => `<option value="${st.id}">${esc(st.name)}</option>`).join("")}</optgroup>`).join("")}</select></div>
+      <div style="grid-column:span 2"><label for="ex-r">Reason</label><input id="ex-r" name="reason" type="text" maxlength="300" placeholder="e.g. Fever, with medical certificate"></div>
+      <div><button class="btn btn-primary btn-block">Record letter</button></div></form>
+    ${store.students.length ? "" : `<p class="small muted mt" style="margin:12px 0 0">No students yet: a Beadle must type a class list first.</p>`}</section>
+  <h2>Waiting for a decision <span class="mono muted">(${pend.length})</span></h2>
+  ${pend.length ? `<ul class="list" style="margin-bottom:24px">${pend.map((l) => `<li class="li"><span class="lead">${icon("excuse-letter", 20)}</span><span class="body"><strong>${esc(l.name)}</strong><span class="small muted">${esc(l.section)} · ${esc(l.reason)}</span></span>
+    <span class="row"><button class="btn btn-sm btn-approve" data-action="decide" data-id="${l.id}" data-approved="1">${icon("approve", 16)}Excuse letter approved</button><button class="btn btn-sm btn-reject" data-action="decide" data-id="${l.id}" data-approved="0">${icon("reject", 16)}Not approved</button></span></li>`).join("")}</ul>`
+    : `<div class="card" style="margin-bottom:24px">${empty("empty-all-caught-up", "No letters waiting")}</div>`}
+  <h2>Decided</h2>${done.length ? `<div class="twrap"><table><thead><tr><th scope="col">Student</th><th scope="col">Reason</th><th scope="col">Decision</th><th scope="col">When</th></tr></thead><tbody>${done.map((l) => `<tr><td>${esc(l.name)}</td><td>${esc(l.reason)}</td>
+    <td>${l.decision === "approved" ? `<span class="chip chip-approved">${icon("approve", 16)}Approved</span>` : `<span class="chip chip-sent_back">${icon("reject", 16)}Not approved</span>`}</td><td class="mono">${l.decidedAt}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">No decisions yet.</p>`}`;
+}
+function viewAdmit(sectionName) {
+  const sec = sectionName || store.sections[0].name, list = store.studentsOf(sec);
+  const flagged = new Set();
+  for (const f of store.forms) if (f.kind === "attendance" && f.section === sec) for (const [sid, v] of Object.entries(f.data.marks)) if (v === "late" || v === "absent") flagged.add(Number(sid));
+  const sorted = [...list].sort((a, b) => (flagged.has(b.id) - flagged.has(a.id)));
+  return `<div class="page-head"><div><p class="eyebrow">APFOR</p><h1>Admit Student to Class</h1><p class="muted">The slip shows on the Beadle Sheet and the Beadle home. No paper.</p></div></div>
+  <div class="card form-row" style="margin-bottom:16px"><div><label for="ad-sec">Section</label><select id="ad-sec" data-action="admitSection">${store.sections.map((s) => `<option value="${esc(s.name)}" ${s.name === sec ? "selected" : ""}>${s.grade} - ${esc(s.name)}</option>`).join("")}</select></div>
+    <div><label for="ad-q">Find a student</label><input id="ad-q" type="search" placeholder="Name" data-action="admitFilter" data-key="ad-q"></div></div>
+  ${sorted.length ? `<ul class="list" id="admit-list">${sorted.map((s) => `<li class="li" data-name="${esc(s.name.toLowerCase())}"><span class="body"><strong>${esc(s.name)}</strong></span>
+    ${flagged.has(s.id) ? `<span class="chip chip-late">${icon("status-late", 14)}Late or absent today</span>` : ""}
+    <form data-form="admit" class="row"><input type="hidden" name="sid" value="${s.id}"><label class="sr-only" for="p-${s.id}">Period for ${esc(s.name)}</label>
+      <select id="p-${s.id}" name="period" style="width:auto;min-height:36px">${PERIODS.map((p) => `<option value="${p.n}">Period ${p.n}</option>`).join("")}</select>
+      <label class="sr-only" for="r-${s.id}">Reason for ${esc(s.name)}</label><select id="r-${s.id}" name="reason" style="width:auto;min-height:36px"><option>Late</option><option>Sent to APFOR</option><option>From the clinic</option><option>School activity</option></select>
+      <button class="btn btn-sm btn-primary">${icon("admit-to-class", 16)}Admit to Class</button></form></li>`).join("")}</ul>`
+    : `<div class="card">${empty("empty-no-records", "No students in " + sec, "A Beadle must type the class list first (Beadle screen, Class list).")}</div>`}
+  <section class="card mt"><div class="card-head">${icon("admit-to-class", 20)}<h2>Admitted today</h2></div>${store.admits.length ? `<ul style="margin:0;padding-left:18px">${store.admits.map((a) => `<li>${esc(a.name)} (${esc(a.section)}), ${esc(a.reason)}, Period ${a.period}, <time>${a.at}</time></li>`).join("")}</ul>` : `<p class="muted">None yet.</p>`}</section>`;
+}
+function viewLog() {
+  return `<div class="page-head"><div><p class="eyebrow">APFOR</p><h1>Audit log</h1><p class="muted">Every change, with who and when.</p></div></div>
+  ${store.log.length ? `<div class="twrap"><table><thead><tr><th scope="col">Time</th><th scope="col">Who</th><th scope="col">Action</th><th scope="col">Detail</th></tr></thead><tbody>${[...store.log].reverse().slice(0, 100).map((l) => `<tr><td class="mono">${l.at}</td><td>${esc(l.who)}</td><td class="mono">${esc(l.action)}</td><td>${esc(l.detail)}</td></tr>`).join("")}</tbody></table></div>`
+    : `<div class="card">${empty("empty-no-records", "Nothing logged yet")}</div>`}`;
+}
+
+/* ---------------- router ---------------- */
+function navFor(role, ep) {
+  const a = (href, ic, label, on, extra = "") => `<a href="${href}" ${on ? 'aria-current="page"' : ""}>${icon(ic, 18)}${label}${extra}</a>`;
+  if (role === "beadle" && ui.section) return a("#/beadle", "home", "Home", ep === "home") + a("#/beadle/list", "students", "Class list", ep === "list") + a("#/beadle/sheet/" + firstOpenPeriod(ui.section), "beadle-sheet", "Beadle Sheet", ep === "sheet") + a("#/beadle/mfi/dress", "mfi-dress-code", "MFI", ep === "mfi") + a("#/beadle/clean", "cleanliness", "Cleanliness", ep === "clean");
+  if (role === "teacher") { const n = store.pending().length; return a("#/teacher", "pending-approvals", "Pending Approvals", ep === "home" || ep === "review", n ? ` <span class="badge"><span class="sr-only">, </span>${n}<span class="sr-only"> pending</span></span>` : "") + a("#/teacher/history", "check-records", "History", ep === "history"); }
+  if (role === "apfor") return a("#/apfor", "check-records", "Sections", ep === "home" || ep === "records") + a("#/apfor/excuses", "excuse-letter", "Excuse letters", ep === "excuses") + a("#/apfor/admit", "admit-to-class", "Admit to Class", ep === "admit") + a("#/apfor/log", "pending-approvals", "Audit log", ep === "log");
+  return "";
+}
+function route() {
+  const [, role = "", a = "", b = ""] = location.hash.slice(1).split("/");
+  let html, ep = "home", title = "Beadle Buddy";
+  if (role === "beadle") {
+    if (a === "pick") ui.section = null;
+    if (!ui.section) { html = viewBeadlePick(); ep = "pick"; title = "Beadle"; }
+    else if (a === "list") { html = viewBeadleList(); ep = "list"; title = "Class list"; }
+    else if (a === "sheet") { html = viewSheet(Number(b) || 1); ep = "sheet"; title = "Beadle Sheet"; }
+    else if (a === "mfi") { html = viewMfi(b === "absentees" ? "absentees" : "dress"); ep = "mfi"; title = "MFI Sheet"; }
+    else if (a === "clean") { html = viewClean(); ep = "clean"; title = "Cleanliness Form"; }
+    else { html = viewBeadleHome(); ep = "home"; title = "Beadle"; }
+  } else if (role === "teacher") {
+    if (a === "review") { html = viewReview(b); ep = "review"; title = "Review"; }
+    else if (a === "history") { html = viewHistory(); ep = "history"; title = "History"; }
+    else { html = viewTeacher(); title = "Pending Approvals"; }
+  } else if (role === "apfor") {
+    if (a === "records") { html = viewRecords(decodeURIComponent(b || store.sections[0].name)); ep = "records"; title = "Records"; }
+    else if (a === "excuses") { html = viewExcuses(); ep = "excuses"; title = "Excuse letters"; }
+    else if (a === "admit") { html = viewAdmit(decodeURIComponent(b || "")); ep = "admit"; title = "Admit to Class"; }
+    else if (a === "log") { html = viewLog(); ep = "log"; title = "Audit log"; }
+    else { html = viewApfor(); title = "APFOR"; }
+  } else { html = viewHome(); title = "Beadle Buddy"; }
+  render(html, role, ep, title);
+  return role + "/" + a;
+}
+let lastRoute = "";
+function render(html, role, ep, title) {
+  const main = $("#main");
+  main.innerHTML = html + `<p class="footer">Beadle Buddy · browser demo · fictional data only</p>`;
+  $("#nav").innerHTML = navFor(role, ep);
+  $("#whoami").innerHTML = role ? `<a class="btn-light" href="#/">${icon("log-out", 18)}<span>Switch screen</span></a>` : "";
+  document.title = title === "Beadle Buddy" ? title : title + " · Beadle Buddy";
+}
+function rerender() {
+  const y = window.scrollY, active = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.key : null;
+  route();
+  window.scrollTo(0, y);
+  if (active) { const el = $("#main").querySelector(`[data-key="${CSS.escape(active)}"]`); if (el) el.focus({ preventScroll: true }); }
+}
+window.addEventListener("hashchange", () => { route(); window.scrollTo(0, 0); $("#main").focus({ preventScroll: true }); });
+
+/* ---------------- actions ---------------- */
+function attempt(fn, okMsg) {
+  try { const r = fn(); if (okMsg) toast(typeof okMsg === "function" ? okMsg(r) : okMsg); return true; }
+  catch (e) { if (e instanceof RuleError) { toast(e.message, "err"); return false; } throw e; }
+}
+function updateRow(f, sid) {
+  const row = sid === "teacher" ? $(".trow") : $(`.rrow[data-sid="${sid}"]`);
+  const cur = sid === "teacher" ? f.data.teacherMark : f.data.marks[sid];
+  if (row) row.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.status === cur)));
+  const m = $("#marked"); if (m) m.textContent = store.studentsOf(f.section).length - store.unmarked(f).length;
+}
+const actions = {
+  pickSection(d) { ui.section = d.section; if (location.hash === "#/beadle") route(); else location.hash = "#/beadle"; },
+  removeStudent(d) { if (attempt(() => store.removeStudent(ctxBeadle(), d.id), (s) => "Removed " + s.name + ".")) rerender(); },
+  mark(d) {
+    const f = store.formById(d.form), cur = d.sid === "teacher" ? f.data.teacherMark : f.data.marks[d.sid];
+    const next = cur === d.status ? null : d.status; // tap the selected status again to clear it
+    if (attempt(() => store.mark(ctxBeadle(), f, d.sid, next))) updateRow(f, d.sid);
+  },
+  markAll(d) { const f = store.formById(d.form); let n = 0; if (attempt(() => { n = store.markAllPresent(ctxBeadle(), f); }, () => n + " students marked present.")) rerender(); },
+  sendSheet(d) { const f = store.formById(d.form); if (attempt(() => store.sendAttendance(ctxBeadle(), f), "Period " + f.key + " sent to " + f.teacher + ".")) { const nx = PERIODS.find((p) => p.n > f.key); location.hash = "#/beadle/sheet/" + (nx ? nx.n : f.key); if (!nx) rerender(); } },
+  sendForm(d) { const f = store.formById(d.form); if (attempt(() => store.sendForm(ctxBeadle(), f), f.title + " sent to " + f.teacher + ".")) rerender(); },
+  sendDay() { if (attempt(() => store.sendDay(ctxBeadle(), ui.section), "Today was sent to the APFOR.")) rerender(); },
+  mfiRemove(d) { if (attempt(() => store.removeInfraction(ctxBeadle(), store.formById(d.form), Number(d.i)))) rerender(); },
+  toggleCheck(d, el) { if (!attempt(() => store.toggleCheck(ctxBeadle(), store.formById(d.form), Number(d.i)))) el.checked = !el.checked; },
+  remarks(d, el) { attempt(() => store.setRemarks(ctxBeadle(), store.formById(d.form), el.value)); },
+  approve(d) { const f = store.formById(d.form); if (attempt(() => store.approve({ role: "teacher", teacher: f.teacher }, f), "Approved: " + f.section + " " + f.title + ".")) location.hash = "#/teacher"; },
+  decide(d) { let n = 0; if (attempt(() => { n = store.decideExcuse(ctxApfor(), d.id, d.approved === "1"); }, () => d.approved === "1" ? "Excuse letter approved. " + n + " absence(s) marked Excused." : "Marked not approved.")) rerender(); },
+  csv(d) {
+    const text = store.csv(d.section, d.kind), blob = new Blob(["﻿" + text], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `beadle-buddy_${d.section}_${d.kind}.csv`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    store.audit("APFOR", "export.csv", d.section + " " + d.kind); toast("CSV downloaded.");
+  },
+};
+const formHandlers = {
+  addNames(fd, form) {
+    const r = store.addStudents(ctxBeadle(), ui.section, fd.get("names"));
+    if (r.added.length) toast(r.added.length + " student(s) added." + (r.skipped.length ? " Skipped duplicates: " + r.skipped.join(", ") : ""));
+    else toast(r.skipped.length ? "Skipped (duplicate or too long): " + r.skipped.join(", ") : "Type at least one name.", "err");
+    rerender(); const t = $("#names"); if (t) t.focus();
+  },
+  mfiAdd(fd) { if (attempt(() => store.logInfraction(ctxBeadle(), store.formById(fd.get("form")), fd.get("sid"), fd.get("violation")), "Infraction logged.")) rerender(); },
+  mfiAbsent(fd, form, ev) {
+    const f = store.formById(fd.get("form")), then = ev.submitter ? ev.submitter.value : "save";
+    if (!attempt(() => store.setAbsentees(ctxBeadle(), f, fd.getAll("sid")))) return;
+    if (then === "send") attempt(() => store.sendForm(ctxBeadle(), f), f.title + " sent to " + f.teacher + "."); else toast("Absentee list saved.");
+    rerender();
+  },
+  clean(fd, form) { const f = store.getForm("cleanliness", ui.section); if (attempt(() => store.sendForm(ctxBeadle(), f), "Cleanliness Form sent to " + f.teacher + ".")) rerender(); },
+  sendBack(fd) { const f = store.formById(fd.get("form")); if (attempt(() => store.sendBack({ role: "teacher", teacher: f.teacher }, f, fd.get("reason")), "Sent back to the Beadle of " + f.section + ".")) location.hash = "#/teacher"; },
+  excuse(fd) { if (attempt(() => store.recordExcuse(ctxApfor(), fd.get("sid"), fd.get("reason")), "Excuse letter recorded.")) rerender(); },
+  admit(fd) { const st = store.student(fd.get("sid")); if (attempt(() => store.admit(ctxApfor(), fd.get("sid"), fd.get("period"), fd.get("reason")), st.name + " admitted to class. It shows on the Beadle Sheet.")) rerender(); },
+};
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-action]");
+  if (!el || el.tagName === "SELECT" || el.tagName === "INPUT" || el.tagName === "TEXTAREA") return;
+  if (el.disabled) return;
+  const fn = actions[el.dataset.action]; if (fn) fn(el.dataset, el);
+});
+document.addEventListener("change", (e) => {
+  const el = e.target.closest("[data-action]"); if (!el) return;
+  const a = el.dataset.action;
+  if (a === "toggleCheck") actions.toggleCheck(el.dataset, el);
+  else if (a === "remarks") actions.remarks(el.dataset, el);
+  else if (a === "gotoSection") location.hash = "#/apfor/records/" + encodeURIComponent(el.value);
+  else if (a === "admitSection") location.hash = "#/apfor/admit/" + encodeURIComponent(el.value);
+});
+document.addEventListener("input", (e) => {
+  const el = e.target.closest("[data-action='admitFilter']"); if (!el) return;
+  const q = el.value.trim().toLowerCase();
+  document.querySelectorAll("#admit-list > li").forEach((li) => { li.hidden = q && !li.dataset.name.includes(q); });
+});
+document.addEventListener("submit", (e) => {
+  const form = e.target.closest("[data-form]"); if (!form) return;
+  e.preventDefault();
+  const fn = formHandlers[form.dataset.form]; if (fn) fn(new FormData(form), form, e);
+});
+route();
+</script>
+</body>
+</html>
